@@ -23,10 +23,19 @@
     "postinstall": "quasar prepare --silent"
   },
   "dependencies": {
+    "@geoman-io/maplibre-geoman-free": "0.10.7",
+    "@indoorequal/vue-maplibre-gl": "^9.0.1",
+    "@mdi/js": "^7.4.47",
     "@quasar/extras": "^2.1.0",
+    "@turf/turf": "^7.4.0",
+    "maplibre-gl": "^6.11.2",
+    "numpy-ts": "^1.7.0",
+    "pyodide": "^314.0.7",
     "quasar": "^2.34.0",
+    "uuid": "^14.0.3",
     "vue": "^3.5.22",
-    "vue-router": "^5.0.6"
+    "vue-router": "^5.0.6",
+    "vue3-charts": "^2.0.1"
   },
   "devDependencies": {
     "@quasar/app-vite": "^3.10.1",

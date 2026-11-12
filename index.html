@@ -12,7 +12,7 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';<% if (ctx.dev) { %> connect-src 'self' ws://localhost:*; worker-src 'self' blob:;<% } %>"
+      content="default-src 'self';script-src 'self' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://jsdelivr.net;script-src-elem 'self' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://jsdelivr.net;style-src 'self' 'unsafe-inline';style-src-elem 'self' 'unsafe-inline';img-src 'self' data: blob: https://tiles.openfreemap.org https://demotiles.maplibre.org;connect-src 'self' <% if (ctx.dev) { %>http://localhost:8000 ws://localhost:* <% } %>https://tiles.openfreemap.org https://demotiles.maplibre.org https://cdn.jsdelivr.net https://jsdelivr.net;worker-src 'self' blob: https://cdn.jsdelivr.net https://jsdelivr.net;child-src 'self' blob:;"
     />
 
     <link
@@ -46,7 +46,7 @@
       href="icons/apple-icon-180x180.png"
     />
   </head>
-  <body>
+  <body class="fullscreen">
     <!-- quasar:entry-point -->
   </body>
 </html>

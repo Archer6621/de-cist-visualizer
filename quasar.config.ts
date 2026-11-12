@@ -2,7 +2,7 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 
 import { defineConfig } from "#q-app";
-
+import path from "node:path";
 export default defineConfig((/* ctx */) => {
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
@@ -31,6 +31,27 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
+      extendViteConf(viteConf) {
+        // 1. Ensure optimizeDeps configuration exists
+        viteConf.optimizeDeps = viteConf.optimizeDeps || {};
+        viteConf.optimizeDeps.exclude = [
+          ...(viteConf.optimizeDeps.exclude || []),
+          "maplibre-gl",
+          "pyodide"
+        ];
+
+        // 2. Add path alias to resolve the worker script cleanly
+        viteConf.resolve = viteConf.resolve || {};
+        viteConf.resolve.alias = {
+          ...viteConf.resolve.alias,
+          "maplibre-gl-worker": path.resolve(
+            __dirname,
+            "node_modules/maplibre-gl/dist/maplibre-gl-csp-worker.js"
+          )
+        };
+
+        viteConf.base = "";
+      },
       target: {
         // browser: 'baseline-widely-available',
         // node: 'node22'
@@ -45,10 +66,10 @@ export default defineConfig((/* ctx */) => {
       // https://v2.quasar.dev/quasar-cli-vite/page-routing-with-vue-router#filename-based-routing
       // filenameBasedRouting: true,
 
-      vueRouterMode: "hash" // available values: 'hash', 'history'
+      vueRouterMode: "hash", // available values: 'hash', 'history'
       // vueRouterBase,
 
-      // publicPath: '/',
+      publicPath: ""
       // define: {},
       // defineEnv: {}
       // ignorePublicFolder: true,
@@ -71,7 +92,18 @@ export default defineConfig((/* ctx */) => {
     devServer: {
       // vueDevtools: true,
       // https: true,
-      open: true // opens browser window automatically
+      open: true, // opens browser window automatically
+      proxy: {
+        "/api": {
+          target: "http://localhost:8000",
+          changeOrigin: true,
+          secure: false
+        }
+      }
+      // headers: {
+      //   "Content-Security-Policy":
+      //     "default-src 'self'; script-src 'self' 'unsafe-eval' blob: https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-eval' blob: https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net;"
+      // }
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
@@ -89,7 +121,7 @@ export default defineConfig((/* ctx */) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: ["Notify", "Cookies"]
     },
 
     // animations: 'all', // --- includes all animations
