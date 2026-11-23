@@ -926,7 +926,7 @@ const buildingProperties = computed(
         []
     )
 );
-const creditAllowance = 425;
+const creditAllowance = 1000;
 const $q = useQuasar();
 const pyodideInstance = ref<PyodideAPI>();
 const showSocialFeatures = ref<boolean>(false);
