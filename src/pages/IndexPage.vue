@@ -75,12 +75,19 @@
               >
             </div>
             <div class="text-subtitle1 q-pt-md text-weight-medium"
-              >Retrofit Information</div
+              >Retrofit Information Selected Buildings</div
             >
             <q-table
               dense
               flat
               hide-bottom
+              :columns="
+                RETROFIT_VALUES.map(r => ({
+                  name: r,
+                  label: retrofitStyle[r].label.split(' ')[0],
+                  format: (val, row) => `${row[r]?.toFixed(2)}` + ` `
+                }))
+              "
               :rows="[
                 {
                   name: beforeRetrofitData.name,
@@ -118,11 +125,18 @@
               >Choose Passive Retrofit Package</div
             >
             <q-option-group dense :options="retrofits" v-model="retrofit">
+              <template #label-0="opt">
+                <div class="row items-center">
+                  <span>{{ opt.label }} (Default)</span>
+                </div>
+              </template>
               <template #label="opt">
                 <div class="row items-center">
                   <span
                     :title="
-                      JSON.stringify(opt.value).substring(1).replace('}', '')
+                      JSON.stringify(opt.value?.values)
+                        .substring(1)
+                        .replace('}', '')
                     "
                     >{{ opt.label }}</span
                   >
@@ -401,7 +415,7 @@
               <div
                 class="text-subtitle1 text-weight-bold text-center"
                 style="user-select: none"
-                >Retrofit effect for selected square</div
+                >Retrofit effect for selection</div
               >
               <Responsive>
                 <template #main="{ height }">
@@ -507,6 +521,108 @@
                 </svg>
                 From Selected Buildings
               </span> -->
+              <span style="display: flex" class="vertical-middle q-pa-xs"
+                ><svg width="16px" height="16px" class="q-mx-xs"></svg>
+              </span>
+            </div>
+            <div style="padding: 4px; display: flex; flex-direction: column">
+              <q-space></q-space>
+              <div
+                class="text-subtitle1 text-weight-bold text-center"
+                style="user-select: none; width: 200px"
+                >Underheating/Overheating hours for selection</div
+              >
+              <Responsive>
+                <template #main="{ height }">
+                  <Chart
+                    :key="beforeRetrofitData.selected.heat"
+                    :size="{
+                      width: 200,
+                      height: Math.min(250, windowHeight - 250)
+                    }"
+                    :data="[
+                      {
+                        name: beforeRetrofitData.name,
+                        ...beforeRetrofitData.selected
+                      },
+                      {
+                        name: afterRetrofitData.name,
+                        ...afterRetrofitData.selected
+                      }
+                      // transformRetrofitResultForChart(afterRetrofitData)
+                    ]"
+                    :margin="{
+                      left: 0,
+                      top: 20,
+                      right: 20,
+                      bottom: 0
+                    }"
+                    :axis="{
+                      primary: {
+                        type: 'band'
+                      },
+                      secondary: {
+                        domain: [0, maxRetroValueExtra + 20],
+                        type: 'linear',
+                        ticks: 8
+                      }
+                    }"
+                  >
+                    <template #layers>
+                      <Grid strokeDasharray="2,2" />
+                      <Bar
+                        v-for="rk in RETROFIT_VALUES_EXTRA"
+                        :dataKeys="['name', rk]"
+                        :barStyle="{ fill: retrofitStyle[rk].color }"
+                      />
+                    </template>
+
+                    <!-- <template #widgets>
+                      <Tooltip
+                        color="black"
+                        :hide-line="true"
+                        :format="'_>10.2f'"
+                        :config="{
+                          name: { color: 'black', label: '' },
+                          heat: { color: '#5b5a5a', label: 'Heating Demand' },
+                          cool: { color: '#5b5a5a', label: 'Cooling Demand' },
+                          elec: {
+                            color: '#5b5a5a',
+                            label: 'Electricity Usage (kWh/year)'
+                          },
+                          gas: {
+                            color: '#5b5a5a',
+                            label: 'Gas usage (m³/year)'
+                          },
+                          co2: { color: '#5b5a5a', label: 'CO² Emission' }
+                        }"
+                      />
+                    </template> -->
+                  </Chart>
+                </template>
+              </Responsive>
+            </div>
+            <div style="display: flex; flex-direction: column" class="q-mr-md">
+              <q-space></q-space>
+              <span
+                style="display: flex"
+                class="vertical-middle q-pa-xs"
+                v-for="value in RETROFIT_VALUES_EXTRA"
+              >
+                <svg width="16px" height="16px" class="q-mx-xs">
+                  <rect
+                    width="16px"
+                    height="16px"
+                    :fill="retrofitStyle[value].color"
+                  ></rect>
+                </svg>
+                {{ retrofitStyle[value].label }}
+                {{
+                  retrofitStyle[value].unit
+                    ? `(${retrofitStyle[value].unit})`
+                    : ""
+                }}
+              </span>
               <span style="display: flex" class="vertical-middle q-pa-xs"
                 ><svg width="16px" height="16px" class="q-mx-xs"></svg>
               </span>
@@ -779,7 +895,7 @@ const retrofitStyle: RetrofitStyle = {
   cool: { label: "Cooling Demand", color: "#0096c7", unit: "kWh/m²" },
   elec: { label: "Electricity Usage", color: "#b1b050", unit: "kWh/m²" },
   gas: { label: "Gas Usage", color: "#389b0a", unit: "kWh/m²" },
-  co2: { label: "CO2 Emission", color: "#4f4f4e", unit: "kg" },
+  co2: { label: "CO2 Emission", color: "#4f4f4e", unit: "kgCO2/m²" },
   over: { label: "Overheating Hours", color: "#ff7272", unit: "hour" },
   under: { label: "Underheating Hours", color: "#6877ff", unit: "hour" }
 };
@@ -1673,13 +1789,13 @@ const beforeRetrofitData = computed<RetrofitResult>(() => {
   return {
     name: "Before",
     selected: Object.fromEntries(
-      RETROFIT_VALUES.map(attr => [
+      [...RETROFIT_VALUES, ...RETROFIT_VALUES_EXTRA].map(attr => [
         attr,
         getDenormalizedRetrofitValue(selectedBuildingIds.value, `init_${attr}`)
       ])
     ) as RetrofitValues,
     total: Object.fromEntries(
-      RETROFIT_VALUES.map(attr => [
+      [...RETROFIT_VALUES, ...RETROFIT_VALUES_EXTRA].map(attr => [
         attr,
         getDenormalizedRetrofitValue(
           buildingProperties.value.keys(),
@@ -1694,13 +1810,13 @@ const afterRetrofitData = computed<RetrofitResult>(() => {
   return {
     name: "After",
     selected: Object.fromEntries(
-      RETROFIT_VALUES.map(attr => [
+      [...RETROFIT_VALUES, ...RETROFIT_VALUES_EXTRA].map(attr => [
         attr,
         getDenormalizedRetrofitValue(selectedBuildingIds.value, `pred_${attr}`)
       ])
     ) as RetrofitValues,
     total: Object.fromEntries(
-      RETROFIT_VALUES.map(attr => [
+      [...RETROFIT_VALUES, ...RETROFIT_VALUES_EXTRA].map(attr => [
         attr,
         getDenormalizedRetrofitValue(
           buildingProperties.value.keys(),
@@ -1713,8 +1829,15 @@ const afterRetrofitData = computed<RetrofitResult>(() => {
 
 const maxRetroValue = computed(() =>
   Math.max(
-    ...Object.values(beforeRetrofitData.value.selected),
-    ...Object.values(afterRetrofitData.value.selected)
+    ...RETROFIT_VALUES.map(r => beforeRetrofitData.value.selected[r]),
+    ...RETROFIT_VALUES.map(r => beforeRetrofitData.value.selected[r])
+  )
+);
+
+const maxRetroValueExtra = computed(() =>
+  Math.max(
+    ...RETROFIT_VALUES_EXTRA.map(r => beforeRetrofitData.value.selected[r]),
+    ...RETROFIT_VALUES_EXTRA.map(r => beforeRetrofitData.value.selected[r])
   )
 );
 
