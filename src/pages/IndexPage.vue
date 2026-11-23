@@ -535,7 +535,7 @@
               <Responsive>
                 <template #main="{ height }">
                   <Chart
-                    :key="beforeRetrofitData.selected.heat"
+                    :key="beforeRetrofitData.selected.under"
                     :size="{
                       width: 200,
                       height: Math.min(250, windowHeight - 250)
