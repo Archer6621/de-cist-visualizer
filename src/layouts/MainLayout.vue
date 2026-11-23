@@ -11,7 +11,7 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> DE-CIST Visualizer </q-toolbar-title>
+        <q-toolbar-title> DE-CIST Retrofitter </q-toolbar-title>
 
         <!-- <div>Quasar v{{ $q.version }}</div> -->
       </q-toolbar>

@@ -3,7 +3,22 @@
 
 import { defineConfig } from "#q-app";
 import path from "node:path";
-export default defineConfig((/* ctx */) => {
+// import { fileURLToPath } from "node:url";
+
+// const localLibEntry = fileURLToPath(
+//   new URL(
+//     "C:/Users/shaad/Repositories/vue3-charts/src/index.ts",
+//     import.meta.url
+//   )
+// );
+// const localLibRoot = fileURLToPath(
+//   new URL("C:/Users/shaad/Repositories/vue3-charts", import.meta.url)
+// );
+
+export default defineConfig(ctx => {
+  // const localLibRoot = path.resolve(ctx.appPaths.appDir, "../vue3-charts");
+  // const localLibEntry = path.resolve(localLibRoot, "");
+
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
@@ -19,7 +34,7 @@ export default defineConfig((/* ctx */) => {
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
-      // 'mdi-v7',
+      "mdi-v7",
       // 'fontawesome-v7',
       // 'eva-icons',
       // 'themify',
@@ -31,6 +46,9 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
+      // alias: {
+      //   "vue3-charts": localLibEntry
+      // },
       extendViteConf(viteConf) {
         // 1. Ensure optimizeDeps configuration exists
         viteConf.optimizeDeps = viteConf.optimizeDeps || {};
@@ -100,6 +118,13 @@ export default defineConfig((/* ctx */) => {
           secure: false
         }
       }
+      // fs: {
+      //   allow: [".", localLibRoot]
+      // },
+      // watch: {
+      //   // Ensures changes outside appDir are tracked; add `usePolling: true` if on WSL2/Docker
+      //   ignored: ["!**/vue3-charts/**"]
+      // }
       // headers: {
       //   "Content-Security-Policy":
       //     "default-src 'self'; script-src 'self' 'unsafe-eval' blob: https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-eval' blob: https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net;"
@@ -121,7 +146,7 @@ export default defineConfig((/* ctx */) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["Notify", "Cookies"]
+      plugins: ["Notify", "Cookies", "Dialog"]
     },
 
     // animations: 'all', // --- includes all animations
