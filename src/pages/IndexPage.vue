@@ -286,7 +286,6 @@
             type="radio"
             dense
           />
-
           <div class="text-subtitle1 q-pt-md text-weight-medium">Financial</div>
           <q-option-group
             v-model="socialFeature"
@@ -312,21 +311,34 @@
                     type: 'linear',
                     domain: [dataLow, dataHigh],
                     trigger: selectedSquareFeatureValue // NOTE: Workaround for making the VerticalMarker reactive.
+                  },
+                  secondary: {
+                    type: 'linear',
+                    ticks: 3
                   }
                 }"
-                :margin="{ left: 10, right: 10, top: 10, bottom: 10 }"
+                :margin="{ left: 10, right: 20, top: 10, bottom: 10 }"
               >
                 <template #layers>
-                  <!-- <Grid strokeDasharray="2,2" /> -->
-                  <Line :dataKeys="['x', 'y']" />
-                  <!-- TODO: Actually make this correspond to selected square -->
-                  <!-- NOTE: Seems to be non-reactive, poor library. -->
-                  <!-- TODO: Cap by datalow/datahigh -->
-                  <VerticalMarker
-                    :value="selectedSquareFeatureValue"
+                  <Area
+                    :dataKeys="['x', 'y']"
+                    type="monotone"
+                    :areaStyle="{ fill: '#1976d2', stroke: '#1976d2' }"
+                  />
+                  <!-- TODO: Cap the square indicator by datalow/datahigh -->
+                  <Marker
+                    v-if="selectedSquareFeatureValue >= dataLow"
+                    :value="
+                      Math.min(
+                        Math.max(selectedSquareFeatureValue, dataLow),
+                        dataHigh
+                      )
+                    "
                     label="Square"
                     color="#e76f51"
-                    strokeWidth="2"
+                    :strokeWidth="3"
+                    :strokeDasharray="0"
+                    axis="primary"
                   />
                 </template>
               </Chart>
@@ -347,6 +359,7 @@
             <i>
               Upon selecting a square, the red vertical line indicates how that
               square relates to the overall distribution for the social feature.
+              If no line appears, the selected square has no data.
             </i>
           </span>
         </div>
@@ -465,7 +478,7 @@
                         type: 'band'
                       },
                       secondary: {
-                        domain: [0, maxRetroValue + 20],
+                        domain: [0, Math.max(maxRetroValue + 20, 400)],
                         type: 'linear',
                         ticks: 8
                       }
@@ -580,7 +593,7 @@
                         type: 'band'
                       },
                       secondary: {
-                        domain: [0, maxRetroValueExtra + 20],
+                        domain: [0, Math.max(maxRetroValueExtra + 20, 30000)],
                         type: 'linear',
                         ticks: 8
                       }
@@ -699,7 +712,7 @@
                 }}</td>
                 <td align="right" rowspan="8">
                   <div
-                    :style="`height:128px;width:16px;background: linear-gradient(0deg,${socialFeature?.lowColor} 0%, ${socialFeature?.highColor} 100%);`"
+                    :style="`height:128px;width:16px;background: linear-gradient(0deg,${socialFeature?.lowColor} 0%,${socialFeature?.midColor ? socialFeature?.midColor + ' 50%, ' : ''} ${socialFeature?.highColor} 100%);`"
                   ></div
                 ></td>
               </tr>
@@ -842,6 +855,7 @@ import {
   Chart,
   Line,
   Marker,
+  Area,
   Grid,
   Tooltip,
   HoverBar,
@@ -1243,6 +1257,7 @@ interface SocialFeature {
   value: {
     name: string;
     lowColor: string;
+    midColor?: string;
     highColor: string;
   };
 }
@@ -1265,16 +1280,17 @@ const socialFeaturesUsage: SocialFeature[] = [
     label: "Average Gas Usage (m³/year)",
     value: {
       name: "avg_gas_consumption_mu",
-      lowColor: "#20cf2c",
-      highColor: "#6e004f"
+      lowColor: "#eaf916",
+      midColor: "#f99e16",
+      highColor: "#fb1414"
     }
   },
   {
     label: "Average Electricity Usage (kWh/year)",
     value: {
       name: "avg_electricity_consumption_mu",
-      lowColor: "#00216e",
-      highColor: "#f0e404"
+      lowColor: "#fcfdff",
+      highColor: "#00216e"
     }
   }
 ];
@@ -1284,24 +1300,24 @@ const socialFeaturesTenure: SocialFeature[] = [
     label: "Rental (%)",
     value: {
       name: "pct_rental_dwellings_mu",
-      lowColor: "#111111",
-      highColor: "#ff0000"
+      lowColor: "#fcfdff",
+      highColor: "#9d00ff"
     }
   },
   {
     label: "Social Rent (% of Rental)",
     value: {
       name: "pct_social_rent_mu",
-      lowColor: "#111111",
-      highColor: "#ff6f00"
+      lowColor: "#fcfdff",
+      highColor: "#b85000"
     }
   },
   {
     label: "Home Owner (%)",
     value: {
       name: "pct_owner_occupied_dwellings_mu",
-      lowColor: "#111111",
-      highColor: "#2dff6c"
+      lowColor: "#fcfdff",
+      highColor: "#ff7ace"
     }
   }
 ];
@@ -1311,8 +1327,8 @@ const socialFeaturesFinancial: SocialFeature[] = [
     label: "Income Band",
     value: {
       name: "income_band",
-      lowColor: "#0e2d2d",
-      highColor: "#29e2ff"
+      lowColor: "#030505",
+      highColor: "#ffed29"
     }
   },
   {
@@ -1338,28 +1354,29 @@ const socialFeaturesHousehold: SocialFeature[] = [
     label: "Average Household Size (Count)",
     value: {
       name: "avg_household_size_mu",
-      lowColor: "#3a3a29",
-      highColor: "#ff11ef"
+      lowColor: "#f7f7f3",
+      highColor: "#1125ff"
     }
   }
 ];
 
 const socialFeaturesDemographic: SocialFeature[] = [
   {
-    label: "Dutch Background (%)",
+    label: "Working Age (%)",
     value: {
-      name: "pct_nl_background_mu",
-      lowColor: "#e74bd2",
-      highColor: "#ffff29"
+      name: "pct_age_25_65_mu",
+      lowColor: "#fcfdff",
+      highColor: "#0da100"
     }
   },
 
   {
-    label: "65+ Percentage (%)",
+    label: "Elderly (%)",
     value: {
       name: "pct_age_65_plus_mu",
-      lowColor: "#000a2d",
-      highColor: "#b0d57d"
+      lowColor: "#e8ff15",
+      midColor: "#3bff29",
+      highColor: "#1764ff"
     }
   }
 ] as const;
@@ -1389,6 +1406,12 @@ const fillColor = computed(() => {
         ["get", socialFeature.value?.name], // Numerical GeoJSON property
         np.percentile(np.array(stats.value), 5),
         socialFeature.value?.lowColor,
+        ...(socialFeature.value?.midColor
+          ? [
+              np.percentile(np.array(stats.value), 50),
+              socialFeature.value?.midColor
+            ]
+          : []),
         np.percentile(np.array(stats.value), 95),
         socialFeature.value?.highColor
       ]
@@ -1425,8 +1448,16 @@ const stats = computed(() => {
 const dataHigh = computed(() => hist.value?.[hist.value?.length - 1]["x"] ?? 0);
 const dataLow = computed(() => hist.value?.[0]["x"] ?? 0);
 
+// const dataHigh = computed(() => np.max(np.array(stats.value)));
+// const dataLow = computed(() => np.min(np.array(stats.value)));
+
 const hist = computed(() => {
-  const [counts, binEdges] = np.histogram(np.array(stats.value));
+  const arr = np.array(stats.value);
+  const un = np.unique(arr);
+  console.log(":D", un.size);
+  const bins = un.size > 15 ? 10 : un.size - 2;
+  const [counts, binEdges] = np.histogram(np.array(stats.value), bins);
+  console.log(binEdges.toArray(), np.min(un), np.max(un));
   // np.random.seed(42);
   // const data = np.random.normal(0, 1, [1000]);
 
@@ -1438,9 +1469,12 @@ const hist = computed(() => {
   // console.log("Bin edges:", binEdges, "\n");
   // console.log("Number of bins:", counts.shape[0], "\n");
   const edges = binEdges.toArray();
-  return counts.toArray().map((c, i) => {
+  const carr = counts.toArray();
+  const ret = [carr[0], ...carr].map((c, i) => {
     return { x: Math.round(edges[i]), y: c };
   });
+  console.log("RET", ret);
+  return ret;
 });
 
 const defaultPaint = {
