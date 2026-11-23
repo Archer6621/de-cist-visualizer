@@ -174,9 +174,18 @@
               v-model="heatingRetrofit"
               dense
             >
-              <template #label-0="opt">
+              <template #label="opt">
                 <div class="row items-center">
-                  <span>{{ opt.label }} (Default)</span>
+                  <span
+                    >{{ opt.label }}
+                    {{
+                      opt.value.name ==
+                      activeHeatingRetrofits[defaultHeatingRetrofitIndex]?.value
+                        .name
+                        ? "(Default)"
+                        : ""
+                    }}</span
+                  >
                 </div>
               </template>
             </q-option-group>
@@ -190,9 +199,18 @@
               v-model="coolingRetrofit"
               dense
             >
-              <template #label-0="opt">
+              <template #label="opt">
                 <div class="row items-center">
-                  <span>{{ opt.label }} (Default)</span>
+                  <span
+                    >{{ opt.label }}
+                    {{
+                      opt.value.name ==
+                      activeCoolingRetrofits[defaultCoolingRetrofitIndex]?.value
+                        .name
+                        ? "(Default)"
+                        : ""
+                    }}</span
+                  >
                 </div>
               </template></q-option-group
             >
@@ -933,6 +951,8 @@ const showSocialFeatures = ref<boolean>(false);
 const showComputedFeatures = ref<boolean>(false);
 
 type ActiveRetrofitName =
+  | "retrofit_no_heating"
+  | "retrofit_no_cooling"
   | "retrofit_dx_airco"
   | "retrofit_gas_boiler"
   | "retrofit_heat_pump"
@@ -944,6 +964,8 @@ const retrofitCostMap: Record<
   ActiveRetrofitName | PassiveRetrofitName,
   number
 > = {
+  retrofit_no_cooling: 0,
+  retrofit_no_heating: 0,
   retrofit_dx_airco: 8,
   retrofit_gas_boiler: 0,
   retrofit_heat_pump: 12,
@@ -1040,7 +1062,7 @@ const retrofitCost = computed<number>(() => {
 const activeCoolingRetrofits = ref<ActiveRetrofit[]>([
   {
     label: "None",
-    value: { name: null, retro_type: "cooling" }
+    value: { name: "retrofit_no_cooling", retro_type: "cooling" }
   },
   {
     label: "Air Conditioning",
@@ -1052,6 +1074,10 @@ const activeCoolingRetrofits = ref<ActiveRetrofit[]>([
   }
 ]);
 const activeHeatingRetrofits = ref<ActiveRetrofit[]>([
+  {
+    label: "None",
+    value: { name: "retrofit_no_heating", retro_type: "heating" }
+  },
   {
     label: "Gas Boiler",
     value: {
@@ -1073,11 +1099,17 @@ const activeHeatingRetrofits = ref<ActiveRetrofit[]>([
     value: { name: "retrofit_district_heating", retro_type: "heating" }
   }
 ]);
+const defaultCoolingRetrofitIndex = activeCoolingRetrofits.value.findIndex(
+  r => r.value.name === "retrofit_no_cooling"
+);
+const defaultHeatingRetrofitIndex = activeHeatingRetrofits.value.findIndex(
+  r => r.value.name === "retrofit_gas_boiler"
+);
 const coolingRetrofit = ref<ActiveRetrofit>(
-  activeCoolingRetrofits.value[0]?.value
+  activeCoolingRetrofits.value[defaultCoolingRetrofitIndex]?.value
 );
 const heatingRetrofit = ref<ActiveRetrofit>(
-  activeHeatingRetrofits.value[0]?.value
+  activeHeatingRetrofits.value[defaultHeatingRetrofitIndex]?.value
 );
 
 interface ActiveRetrofit {
@@ -1637,9 +1669,13 @@ async function predict() {
         r_package: retrofit.value,
         r_active: [coolingRetrofit.value, heatingRetrofit.value].filter(
           r =>
-            // The first option is considered to be the default, and thus is not sent. The backend interprets this as a reset to default.
-            r?.name != activeHeatingRetrofits.value[0]?.value.name &&
-            r?.name != activeCoolingRetrofits.value[0]?.value.name
+            // The backend interprets this as a no-op, if it is not sent.
+            r?.name !=
+              activeHeatingRetrofits.value[defaultHeatingRetrofitIndex]?.value
+                .name &&
+            r?.name !=
+              activeCoolingRetrofits.value[defaultCoolingRetrofitIndex]?.value
+                .name
         ),
         square_id: selectedStateId.value
       }),
