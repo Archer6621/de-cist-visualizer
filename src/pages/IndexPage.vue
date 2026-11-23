@@ -1830,14 +1830,14 @@ const afterRetrofitData = computed<RetrofitResult>(() => {
 const maxRetroValue = computed(() =>
   Math.max(
     ...RETROFIT_VALUES.map(r => beforeRetrofitData.value.selected[r]),
-    ...RETROFIT_VALUES.map(r => beforeRetrofitData.value.selected[r])
+    ...RETROFIT_VALUES.map(r => afterRetrofitData.value.selected[r])
   )
 );
 
 const maxRetroValueExtra = computed(() =>
   Math.max(
     ...RETROFIT_VALUES_EXTRA.map(r => beforeRetrofitData.value.selected[r]),
-    ...RETROFIT_VALUES_EXTRA.map(r => beforeRetrofitData.value.selected[r])
+    ...RETROFIT_VALUES_EXTRA.map(r => afterRetrofitData.value.selected[r])
   )
 );
 
