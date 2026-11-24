@@ -1280,9 +1280,9 @@ const socialFeaturesUsage: SocialFeature[] = [
     label: "Average Gas Usage (m³/year)",
     value: {
       name: "avg_gas_consumption_mu",
-      lowColor: "#eaf916",
-      midColor: "#f99e16",
-      highColor: "#fb1414"
+      lowColor: "#edf941",
+      midColor: "#ff5e00",
+      highColor: "#da0000"
     }
   },
   {
@@ -1290,7 +1290,8 @@ const socialFeaturesUsage: SocialFeature[] = [
     value: {
       name: "avg_electricity_consumption_mu",
       lowColor: "#fcfdff",
-      highColor: "#00216e"
+      midColor: "#3b9dee",
+      highColor: "#001953"
     }
   }
 ];
@@ -1301,7 +1302,7 @@ const socialFeaturesTenure: SocialFeature[] = [
     value: {
       name: "pct_rental_dwellings_mu",
       lowColor: "#fcfdff",
-      highColor: "#9d00ff"
+      highColor: "#3c0096"
     }
   },
   {
@@ -1309,7 +1310,8 @@ const socialFeaturesTenure: SocialFeature[] = [
     value: {
       name: "pct_social_rent_mu",
       lowColor: "#fcfdff",
-      highColor: "#b85000"
+      midColor: "#ff8a30",
+      highColor: "#832700"
     }
   },
   {
@@ -1317,7 +1319,8 @@ const socialFeaturesTenure: SocialFeature[] = [
     value: {
       name: "pct_owner_occupied_dwellings_mu",
       lowColor: "#fcfdff",
-      highColor: "#ff7ace"
+      midColor: "#c44e99",
+      highColor: "#a6034f"
     }
   }
 ];
@@ -1327,8 +1330,9 @@ const socialFeaturesFinancial: SocialFeature[] = [
     label: "Income Band",
     value: {
       name: "income_band",
-      lowColor: "#030505",
-      highColor: "#ffed29"
+      lowColor: "#0c153e",
+      midColor: "#696c51",
+      highColor: "#fed401"
     }
   },
   {
@@ -1355,7 +1359,8 @@ const socialFeaturesHousehold: SocialFeature[] = [
     value: {
       name: "avg_household_size_mu",
       lowColor: "#f7f7f3",
-      highColor: "#1125ff"
+      midColor: "#5e9dbd",
+      highColor: "#0a3972"
     }
   }
 ];
@@ -1366,7 +1371,8 @@ const socialFeaturesDemographic: SocialFeature[] = [
     value: {
       name: "pct_age_25_65_mu",
       lowColor: "#fcfdff",
-      highColor: "#0da100"
+      midColor: "#7cd874",
+      highColor: "#0a5403"
     }
   },
 
@@ -1374,9 +1380,9 @@ const socialFeaturesDemographic: SocialFeature[] = [
     label: "Elderly (%)",
     value: {
       name: "pct_age_65_plus_mu",
-      lowColor: "#e8ff15",
-      midColor: "#3bff29",
-      highColor: "#1764ff"
+      lowColor: "#f2ff7d",
+      midColor: "#1696a9",
+      highColor: "#0834ba"
     }
   }
 ] as const;
