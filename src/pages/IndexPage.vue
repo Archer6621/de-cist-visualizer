@@ -35,7 +35,7 @@
     </defs>
   </svg>
   <div class="fit row">
-    <div class="col-3" style="overflow-y: scroll; height: 100%">
+    <div class="col-auto" style="overflow-y: scroll; height: 100%; width: 28%">
       <q-expansion-item
         v-model="showComputedFeatures"
         icon="science"
@@ -63,11 +63,7 @@
                   )
                 "
                 @click="
-                  mapHolder?.map?.setFeatureState(
-                    { source: 'buildings', id: building },
-                    { highlight: true }
-                  );
-                  resetHighlight(building);
+                  highlightBuilding(building);
                   buildingIdToVisualize = building;
                 "
                 v-for="building in selectedBuildingIds"
@@ -82,10 +78,13 @@
               flat
               hide-bottom
               :columns="
-                RETROFIT_VALUES.map(r => ({
+                ['name', ...RETROFIT_VALUES].map(r => ({
                   name: r,
-                  label: retrofitStyle[r].label.split(' ')[0],
-                  format: (val, row) => `${row[r]?.toFixed(2)}` + ` `
+                  label: retrofitStyle[r]?.label.split(' ')[0] ?? '',
+                  format: (val, row) =>
+                    `${isNumber(row[r]) ? row[r]?.toFixed(2) : row[r]}` + ` `,
+                  headerStyle: 'width: 8px',
+                  autoWidth: false
                 }))
               "
               :rows="[
@@ -100,9 +99,21 @@
               ]"
               row-key="name"
             />
-            <div class="text-subtitle1 q-pt-md text-weight-medium"
+            <div
+              class="text-subtitle1 q-pt-md text-weight-medium"
+              style="line-height: 1.1"
               >Building Visualization</div
             >
+            <div class="text-caption text-grey-7 q-pb-sm">
+              Archetype:
+              {{
+                buildingIdToVisualize
+                  ? (archetypeMap[
+                      buildingProperties.get(buildingIdToVisualize)?.archetype
+                    ] ?? "Unknown")
+                  : "---"
+              }}
+            </div>
             <div class="bg-blue-grey-1">
               <q-img
                 :src="`api/idf/?bag_id=${buildingIdToVisualize}&user_id=${user_uuid}`"
@@ -365,7 +376,7 @@
         </div>
       </q-expansion-item>
     </div>
-    <div class="col-9">
+    <div class="col-auto" style="width: 72%">
       <mgl-map
         :map-style="style"
         :center="[4.462456, 51.926517]"
@@ -605,6 +616,11 @@
                         v-for="rk in RETROFIT_VALUES_EXTRA"
                         :dataKeys="['name', rk]"
                         :barStyle="{ fill: retrofitStyle[rk].color }"
+                      />
+                      <Labels
+                        v-for="rk in RETROFIT_VALUES_EXTRA"
+                        :dataKeys="['name', rk]"
+                        :labelStyle="{ fill: retrofitStyle[rk].color }"
                       />
                     </template>
 
@@ -889,6 +905,7 @@ import {
   mdiSelect
 } from "@mdi/js";
 import VerticalMarker from "@/components/VerticalMarker.vue";
+import Labels from "@/components/LabelsLayer.vue";
 setWorkerUrl(workerUrl);
 // async function main() {
 const { lighten } = colors;
@@ -915,6 +932,14 @@ type RetrofitStyle = Record<
   RetrofitValue | RetrofitValueExtra,
   { label: string; color: string; unit?: string }
 >;
+
+const archetypeMap: Record<number, string> = {
+  1: "Detached House",
+  2: "Corner House",
+  3: "Terraced House",
+  4: "Ground Floor Apartment",
+  5: "Upstairs Apartment"
+};
 
 const retrofitStyle: RetrofitStyle = {
   ...(Object.fromEntries(
@@ -1107,11 +1132,11 @@ const activeHeatingRetrofits = ref<ActiveRetrofit[]>([
       retro_type: "heating",
       params: { hp_cop: 5 }
     }
-  },
-  {
-    label: "District Heating",
-    value: { name: "retrofit_district_heating", retro_type: "heating" }
   }
+  // {
+  //   label: "District Heating",
+  //   value: { name: "retrofit_district_heating", retro_type: "heating" }
+  // }
 ]);
 const defaultCoolingRetrofitIndex = activeCoolingRetrofits.value.findIndex(
   r => r.value.name === "retrofit_no_cooling"
@@ -1347,7 +1372,7 @@ const socialFeaturesFinancial: SocialFeature[] = [
 
 const socialFeaturesHousehold: SocialFeature[] = [
   {
-    label: "Appartment Density (%)",
+    label: "Apartment Density (%)",
     value: {
       name: "pct_multi_family_dwellings_mu",
       lowColor: "#3a3a29",
@@ -1589,13 +1614,12 @@ function message(str: string, color = "purple") {
   $q.notify({
     message: str,
     color: color,
-    position: "bottom-right"
+    position: "top-right"
   });
 }
 
 async function clickBuilding(e) {
   console.log(e);
-  message(`Clicked building ${e.features[0].id}`);
   selectBuildings([e.features[0].id]);
   e.preventDefault();
 }
@@ -1621,16 +1645,38 @@ async function selectBuildings(buildingIds: number[]) {
     );
   }
 
+  buildingSanityChecks.forEach(check => {
+    selectedBuildingIds.value.forEach(buildingId => {
+      console.log(buildingProperties.value.get(buildingId));
+
+      if (check.violated(buildingProperties.value.get(buildingId))) {
+        message(
+          `Sanity check failed for building '${buildingId}': ${check.message}, this may affect predictions.`,
+          "orange"
+        );
+        highlightBuilding(buildingId, 3000);
+      }
+    });
+  });
+
   buildingIdToVisualize.value = selectedBuildingIds.value[0];
 }
 
-function resetHighlight(building: number) {
+function highlightBuilding(building: number, duration: number = 1000) {
+  mapHolder?.map?.setFeatureState(
+    { source: "buildings", id: building },
+    { highlight: true }
+  );
+  resetHighlight(building, duration);
+}
+
+function resetHighlight(building: number, duration: number) {
   setTimeout(() => {
     mapHolder?.map?.setFeatureState(
       { source: "buildings", id: building },
       { highlight: false }
     );
-  }, 1000);
+  }, duration);
 }
 
 async function reset() {
@@ -1676,11 +1722,13 @@ async function predict() {
 
     if (
       retrofit.value.name === null &&
-      coolingRetrofit.value.name === null &&
-      heatingRetrofit.value.name === null
+      coolingRetrofit.value.name ===
+        activeCoolingRetrofits.value[defaultCoolingRetrofitIndex]?.value.name &&
+      heatingRetrofit.value.name ===
+        activeHeatingRetrofits.value[defaultHeatingRetrofitIndex]?.value.name
     ) {
       message(
-        `No retrofits selected, resetting retrofits for buildings: ${selectedBuildingIds.value}`,
+        `Default retrofits selected, resetting retrofits for buildings: ${selectedBuildingIds.value}`,
         "grey"
       );
     } else {
@@ -1688,19 +1736,6 @@ async function predict() {
         `Computing retrofit impact for buildings: ${selectedBuildingIds.value}`
       );
     }
-
-    buildingSanityChecks.forEach(check => {
-      selectedBuildingIds.value.forEach(buildingId => {
-        console.log(buildingProperties.value.get(buildingId));
-
-        if (check.violated(buildingProperties.value.get(buildingId))) {
-          message(
-            `Sanity check failed for building '${buildingId}': ${check.message}, this may affect predictions.`,
-            "orange"
-          );
-        }
-      });
-    });
 
     const res = await fetch(`api/predict/?user_id=${user_uuid.value}`, {
       method: "POST",
