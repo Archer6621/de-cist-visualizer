@@ -721,7 +721,7 @@
             <table align="right">
               <tr
                 ><td align="right">{{
-                  fillColor?.["fill-color"]?.[5]?.toLocaleString("en-us", {
+                  dataHighApprox?.toLocaleString("en-us", {
                     maximumFractionDigits: 2,
                     useGrouping: false
                   })
@@ -737,7 +737,7 @@
               <tr><td>.</td></tr>
               <tr
                 ><td align="right">{{
-                  fillColor?.["fill-color"]?.[3]?.toLocaleString("en-us", {
+                  dataLowApprox?.toLocaleString("en-us", {
                     maximumFractionDigits: 2,
                     useGrouping: false
                   })
@@ -1381,8 +1381,9 @@ const socialFeaturesHousehold: SocialFeature[] = [
     label: "Apartment Density (%)",
     value: {
       name: "pct_multi_family_dwellings_mu",
-      lowColor: "#3a3a29",
-      highColor: "#6f7bff"
+      lowColor: "#cfa8ff",
+      midColor: "#431ea1",
+      highColor: "#1a0e36"
     }
   },
   {
@@ -1402,8 +1403,8 @@ const socialFeaturesDemographic: SocialFeature[] = [
     value: {
       name: "pct_age_25_65_mu",
       lowColor: "#fcfdff",
-      midColor: "#7cd874",
-      highColor: "#0a5403"
+      midColor: "#6ab663",
+      highColor: "#063501"
     }
   },
 
@@ -1441,7 +1442,7 @@ const fillColor = computed(() => {
         "interpolate",
         ["linear"],
         ["get", socialFeature.value?.name], // Numerical GeoJSON property
-        np.percentile(np.array(stats.value), 5),
+        dataLowApprox.value,
         socialFeature.value?.lowColor,
         ...(socialFeature.value?.midColor
           ? [
@@ -1449,7 +1450,7 @@ const fillColor = computed(() => {
               socialFeature.value?.midColor
             ]
           : []),
-        np.percentile(np.array(stats.value), 95),
+        dataHighApprox.value,
         socialFeature.value?.highColor
       ]
     };
@@ -1485,8 +1486,12 @@ const stats = computed(() => {
 const dataHigh = computed(() => hist.value?.[hist.value?.length - 1]["x"] ?? 0);
 const dataLow = computed(() => hist.value?.[0]["x"] ?? 0);
 
-// const dataHigh = computed(() => np.max(np.array(stats.value)));
-// const dataLow = computed(() => np.min(np.array(stats.value)));
+const dataHighApprox = computed(() =>
+  np.percentile(np.array(stats.value), 99.99)
+);
+const dataLowApprox = computed(() =>
+  np.percentile(np.array(stats.value), 0.01)
+);
 
 const hist = computed(() => {
   const arr = np.array(stats.value);
