@@ -1622,8 +1622,17 @@ function message(str: string, color = "purple") {
 }
 
 async function clickBuilding(e) {
-  // console.log(e);
-  selectBuildings([e.features[0].id]);
+  if (e.originalEvent.ctrlKey) {
+    if (!selectedBuildingIds.value.includes(e.features[0].id)) {
+      selectBuildings([...selectedBuildingIds.value, e.features[0].id]);
+    } else {
+      selectBuildings(
+        selectedBuildingIds.value.filter(id => id != e.features[0].id)
+      );
+    }
+  } else {
+    selectBuildings([e.features[0].id]);
+  }
   e.preventDefault();
 }
 
