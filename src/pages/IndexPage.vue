@@ -1704,11 +1704,15 @@ async function reset() {
         { source: "buildings", id: parseInt(building_id) },
         { retrofit: false }
       );
+    }
+
+    // Just to be sure, reset for all squares.
+    mapHolder?.map?.querySourceFeatures("geojson").forEach(f => {
       mapHolder?.map?.setFeatureState(
-        { source: "geojson", id: building.square_id },
+        { source: "geojson", id: f.id },
         { retrofit: false }
       );
-    }
+    });
 
     retrofittedBuildings.value = {};
     if (selectedStateId.value != undefined) {
