@@ -1216,10 +1216,10 @@ const retrofits = ref<RetrofitPackage[]>([
     value: {
       name: "deep_limited_inf",
       values: {
-        wall: 3.9,
-        roof: 4.2,
-        floor: 3.1,
-        window: 2,
+        wall: 6.2,
+        roof: 8.3,
+        floor: 5.7,
+        window: 3,
         inf_rate: 0.0004
       }
     }
