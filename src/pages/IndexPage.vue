@@ -1055,14 +1055,14 @@ const buildingSanityChecks: BuildingSanityCheck[] = [
 const buildingRetrofitCost = function (building: object): number {
   let cost = 0;
   if (building.retrofit.passive.name) {
-    console.log(
-      building.retrofit.passive.name,
-      retrofitCostMap?.[building.retrofit.passive.name]
-    );
+    // console.log(
+    //   building.retrofit.passive.name,
+    //   retrofitCostMap?.[building.retrofit.passive.name]
+    // );
     cost += retrofitCostMap?.[building.retrofit.passive.name] ?? 0;
   }
   for (const act of building.retrofit?.active ?? []) {
-    console.log(building.retrofit.active, retrofitCostMap?.[act.name]);
+    // console.log(building.retrofit.active, retrofitCostMap?.[act.name]);
     cost += retrofitCostMap?.[act.name] ?? 0;
   }
   return cost;
@@ -1236,7 +1236,7 @@ const user_uuid = $q.cookies.useCookie("user", {
 //       but I don't think Typescript supports case classes..
 const currentTool = ref<"general" | "select">("general");
 watch(currentTool, async newTool => {
-  console.log("changed!", newTool);
+  // console.log("changed!", newTool);
   switch (newTool) {
     case "general":
       mapHolder?.map?.dragPan.enable();
@@ -1247,7 +1247,7 @@ watch(currentTool, async newTool => {
       mapHolder?.map?.getCanvas().style.setProperty("cursor", "crosshair");
       break;
   }
-  console.log(currentTool.value);
+  // console.log(currentTool.value);
 });
 
 watch(showSocialFeatures, async newVal => {
@@ -1491,10 +1491,8 @@ const dataLow = computed(() => hist.value?.[0]["x"] ?? 0);
 const hist = computed(() => {
   const arr = np.array(stats.value);
   const un = np.unique(arr);
-  console.log(":D", un.size);
   const bins = un.size > 15 ? 10 : un.size - 2;
   const [counts, binEdges] = np.histogram(np.array(stats.value), bins);
-  console.log(binEdges.toArray(), np.min(un), np.max(un));
   // np.random.seed(42);
   // const data = np.random.normal(0, 1, [1000]);
 
@@ -1510,7 +1508,6 @@ const hist = computed(() => {
   const ret = [carr[0], ...carr].map((c, i) => {
     return { x: Math.round(edges[i]), y: c };
   });
-  console.log("RET", ret);
   return ret;
 });
 
@@ -1625,7 +1622,7 @@ function message(str: string, color = "purple") {
 }
 
 async function clickBuilding(e) {
-  console.log(e);
+  // console.log(e);
   selectBuildings([e.features[0].id]);
   e.preventDefault();
 }
@@ -1653,8 +1650,6 @@ async function selectBuildings(buildingIds: number[]) {
 
   buildingSanityChecks.forEach(check => {
     selectedBuildingIds.value.forEach(buildingId => {
-      console.log(buildingProperties.value.get(buildingId));
-
       if (check.violated(buildingProperties.value.get(buildingId))) {
         message(
           `Sanity check failed for building '${buildingId}': ${check.message}, this may affect predictions.`,
@@ -2025,7 +2020,7 @@ async function loadBuildings(squareId: number) {
   // console.log(parsed);
   // buildings.value = parsed;
   buildings.value = JSON.parse(await res2.json());
-  console.log("Buildings!", buildings.value);
+  console.log("Fetched Buildings", buildings.value);
   // console.log(
   //   "???",
   //   beforeRetrofitData.value.selected,
@@ -2158,7 +2153,7 @@ watch(
       }
     });
 
-    console.log("RETRO BUILDINGS", retrofittedBuildings.value);
+    console.log("Retrofitted Buildings", retrofittedBuildings.value);
   },
   { immediate: true }
 );
