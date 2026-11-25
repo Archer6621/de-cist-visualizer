@@ -572,7 +572,7 @@
               <div
                 class="text-subtitle1 text-weight-bold text-center"
                 style="user-select: none; width: 200px"
-                >Underheating/Overheating hours for selection</div
+                >Over-/Underheating hours for selection</div
               >
               <Responsive>
                 <template #main="{ height }">
