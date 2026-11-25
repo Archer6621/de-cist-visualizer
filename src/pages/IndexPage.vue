@@ -1277,6 +1277,12 @@ let popupTimeout: number = 0;
 //   );
 // });
 
+watch(selectedBuildingIds.value, newVal => {
+  if (newVal) {
+    showComputedFeatures.value = true;
+  }
+});
+
 interface SocialFeature {
   label: string;
   value: {
