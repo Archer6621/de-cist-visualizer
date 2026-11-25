@@ -2063,7 +2063,7 @@ async function squareZoom(e) {
       );
     }
     selectedStateId.value = e.features[0].id;
-
+    selectBuildings([]);
     mapHolder?.map?.setFeatureState(
       { source: "geojson", id: selectedStateId.value },
       { selected: true }
