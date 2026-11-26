@@ -1830,7 +1830,13 @@ function hoverBuildingEnter(e) {
     popupCoordinates.value = e.lngLat;
     if (e.features[0].properties.has_retrofit) {
       clearTimeout(popupTimeout);
-      popupText.value = `Retrofit Details: ${e.features[0].properties.retrofit_details}`; // TODO: Beautify the popup.
+      const retrofit_details = JSON.parse(
+        e.features[0].properties.retrofit_details
+      );
+      const passive_retrofit = retrofit_details.passive ?? { name: "none" };
+      const active_retrofits = retrofit_details.active;
+
+      popupText.value = `Retrofit Details | Passive: ${passive_retrofit?.name} | Active: ${active_retrofits?.length > 0 ? active_retrofits.map(r => r?.name).join(", ") : "none"} |`;
       popupTimeout = setTimeout(() => {
         if (hoveredBuildingStateId) {
           popupShow.value = true;
