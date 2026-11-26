@@ -453,7 +453,7 @@
           :position="Position.BOTTOM_LEFT"
         >
           <div style="display: flex">
-            <div style="padding: 4px; pointer-events: auto">
+            <div style="padding: 4px">
               <div
                 class="text-subtitle1 text-weight-bold text-center"
                 style="user-select: none"
