@@ -1627,7 +1627,7 @@ function message(str: string, color = "purple") {
 }
 
 async function clickBuilding(e) {
-  if (e.originalEvent.ctrlKey) {
+  if (e.originalEvent.ctrlKey || e.originalEvent.metaKey) {
     if (!selectedBuildingIds.value.includes(e.features[0].id)) {
       selectBuildings([...selectedBuildingIds.value, e.features[0].id]);
     } else {
